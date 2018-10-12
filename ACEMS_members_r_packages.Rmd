@@ -1,0 +1,72 @@
+---
+title: "R packages authored by ACEMS Members"
+author: "Jessie Roberts"
+date: "10/3/2018"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+
+#install.packages("magrittr")
+library(magrittr)
+#install.packages('tidyr')
+library('tidyr')
+#install.packages("dplyr")
+library(dplyr)
+library(ggplot2)
+library(reshape2)
+library(plotly)
+
+devtools::install_github("metacran/cranlogs")
+cranlogs::cran_downloads(when = "last-week", packages = c("datapasta", "httr"))
+
+```
+
+```{r echo = FALSE, message = FALSE}
+#download data from CRAN 
+
+
+r_package_down <- cranlogs::cran_downloads(package = c("forecast", "naniar", "datapasta", "SSN", "queuecomputer", "BSL", "bayesImageS", "MBSGS", "tsibble", "tsibbledata", "tsibblestats", "fable", "suggrants", "bfast", "hts", "robets", "stR","theif", "tsfeatures", "tsgeneration", "expsmooth", "fma", "fpp", "fpp2", "Mcomp", "ozdata", "tscompdata", "addb", "demography", "fds", "ftsa", "rainbow", "smoothAPC", "cricketdata", "eechidna", "emma", "hdrcde", "MEFM", "rmakdown", "season" ), from = "2014-06-01", to = "2018-10-01")
+
+#group by package and create cumulative count variable
+r_packages <- r_package_down %>% 
+ group_by(package) %>% 
+ mutate(count_cumulative = cumsum(count))
+
+#generate ggplot using plotly 
+p <- ggplot(data=r_packages,
+            aes(x=date, y=count_cumulative, colour=package)) +
+ geom_line() + ggtitle("Cumulative R Package Downloads for ACEMS Members")
+
+p <- ggplotly(p)
+p
+
+#package_downloads <- ggplot(r_package_down, aes(date, count)) + geom_line(aes(colour = package)) +ggtitle("R Package Downloads for ACEMS Members") +facet_wrap(~package) + ylim(0,500) 
+#package_downloads
+
+```
+Now lots remove Rob Hyndman's most downloaded packages.. 
+```{r echo=FALSE, message=FALSE}
+
+p2_data <- r_package_down %>% 
+ filter(package != "forecast") %>%
+ filter(package != "expsmooth") %>% 
+ filter(package != "fpp") %>% 
+ filter(package != "fma") %>% 
+ filter(package != "hdrcde") %>% 
+ group_by(package) %>% 
+ mutate(count_cumulative = cumsum(count))
+
+
+p2 <- ggplot(data=p2_data,
+            aes(x=date, y=count_cumulative, colour=package)) +
+ geom_line() + ggtitle("Cumulative R Package Downloads for ACEMS Members")
+
+p2 <- ggplotly(p2)
+p2
+```
+
+
+

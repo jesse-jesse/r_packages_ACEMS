@@ -1,0 +1,169 @@
+---
+title: "R packages authored by ACEMS Members"
+author: "Rob J Hyndman"
+output:
+  html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE,
+  cache = TRUE,
+  error = FALSE
+)
+library(tidyverse)
+library(stringi)
+library(glue)
+library(cranlogs)
+```
+
+```{r acemspackages, include=FALSE}
+# Download meta data on all CRAN packages
+# and extract maintainer names
+# download.file("http://cran.r-project.org/web/packages/packages.rds", "packages.rds");
+allcran <- as.tibble(readRDS("packages.rds"), row.names = NA) %>%
+  mutate(
+    Family = str_extract(Maintainer, "[a-zA-Z]* <"),
+    Family = str_extract(Family, "[a-zA-Z]*"),
+    Given = str_extract(Maintainer, "[A-Za-z]*"),
+    GivenInitials = str_sub(Given, 1, 2)
+  )
+
+# Download list of all ACEMS members
+# acems <- read_sheet(ss = "https://docs.google.com/spreadsheets/d/1g1HP35bvlaOdDmx5zvDkI2e1diHOePkzgQPaEqmGnLk/edit?usp=sharing") %>%
+acems <- read_csv("ACEMS_Researcher_ID_numbers - ACEMS_Researcher_ID_numbers.csv") %>%
+  rename(institution = "Organisational Unit") %>%
+  mutate(GivenInitials = str_sub(Given, 1, 2))
+
+# Find CRAN packages by authors at ACEMS nodes
+acems_places <- c("monash", "unimelb", "qut", "uq", "usyd", "uts", "unsw", "adelaide")
+acemscran <- allcran %>%
+  filter(stri_detect_regex(
+    Maintainer,
+    paste(paste0(acems_places, "\\.edu"), collapse = "|")
+  ))
+
+# Now select packages where maintainer is at ACEMS
+acems_packages <- acemscran %>%
+  inner_join(acems, by = c("GivenInitials", "Family")) %>%
+  pull(Package)
+# Add in other known packages
+acems_packages <- c(
+    acems_packages,
+    "addb",
+    "bayesImageS",
+    "bfast",
+    "BSL",
+    "CEoptim",
+    "colmozzie",
+    "cricketdata",
+    "curvHDR",
+    "datapasta",
+    "demography",
+    "DescribeDisplay",
+    "diffpriv",
+    "dobson",
+    "edrGraphicalTools",
+    "eechidna",
+    "emma",
+    "expsmooth",
+    "fable",
+    "fds",
+    "fma",
+    "forecast",
+    "fpp",
+    "fpp2",
+    "ftsa",
+    "gammSlice",
+    "glmmEP",
+    "hdrcde",
+    "hts",
+    "LowRankQP",
+    "MBSGS",
+    "Mcomp",
+    "MEFM",
+    "mozzie",
+    "naniar",
+    "nullabor",
+    "ozdata",
+    "PIGE",
+    "queuecomputer",
+    "rainbow",
+#    "rmarkdown",
+    "robets",
+    "rwalkr",
+    "season",
+    "serrsBayes",
+    "sgPLS",
+    "smoothAPC",
+    "SSN",
+    "staplr",
+    "stR",
+    "sugrrants",
+    "taipan",
+    "thief",
+    "tourrGui",
+    "tscompdata",
+    "tsfeatures",
+    "tsgeneration",
+    "tsibble",
+    "tsibbledata",
+    "tsibblestats",
+    "visdat"
+  ) %>%
+  unique() %>%
+  sort()
+acemscran <- allcran %>%
+  filter(Package %in% acems_packages)
+```
+
+```{r downloads, echo = FALSE, message = FALSE, warning=FALSE}
+# download data from CRAN
+r_package_down <- cran_downloads(package = acems_packages,
+                                 from = "2017-12-12",
+                                 to = "2018-12-11")
+
+# group by package and create count variable
+r_packages <- r_package_down %>%
+  group_by(package) %>%
+  summarise(Total = sum(count)) %>%
+  arrange(-Total) %>%
+  rename(Package=package) %>%
+  inner_join(acemscran, by="Package") %>%
+  inner_join(acems, by=c("GivenInitials", "Family"))
+```
+
+One way ACEMS member translate their methodological research into practice is via R packages. R is an open-source language for statistical computing and data analysis. Research can be shared by putting R packages on the Comprehensive R Archive Network (CRAN), or on github, or some other public code repository. R packages allow anyone to implement cutting-edge research on their own data.
+
+At the end of 2018, ACEMS members had contributed a total of `r NROW(acemscran)` packages on CRAN, plus many more on github. During 2018, the CRAN packages were downloaded a total of `r sprintf("%7.0f", sum(r_packages$Total))` times, and one (the `forecast` package by Rob Hyndman) was downloaded over 1 million times!  The table below shows all ACEMS packages that were downloaded more than 5000 times each during 2018.
+
+
+```{r table}
+r_packages %>%
+  mutate(Maintainer = glue("{Given.x} {Family}")) %>%
+  select(Package, Total, Maintainer, institution) %>%
+  filter(Total > 5000) %>%
+  rename(
+    `Total downloads in 2018` = "Total",
+    `ACEMS node` = "institution") %>%
+  knitr::kable(booktabs=TRUE)
+```
+
+The following graph shows all packages authored by ACEMS members other than those downloaded more than 30,000 times during 2018.
+
+```{r graph}
+# generate ggplot using plotly
+r_packages %>%
+  filter(Total < 30000) %>%
+  mutate(
+    Package = reorder(Package, Total)) %>%
+  ggplot(aes(x = Package, y=Total)) +
+  geom_col() +
+  coord_flip() +
+  ggtitle("R Package Downloads for 2018")
+```
+
+
+

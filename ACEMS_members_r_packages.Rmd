@@ -3,8 +3,8 @@ title: "R packages authored by ACEMS Members"
 author: "Jessie Roberts"
 date: "10/3/2018"
 output:
-  html_document: default
   pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -27,8 +27,7 @@ cranlogs::cran_downloads(when = "last-week", packages = c("datapasta", "httr"))
 ```{r echo = FALSE, message = FALSE}
 #download data from CRAN 
 
-
-r_package_down <- cranlogs::cran_downloads(package = c("forecast", "naniar", "datapasta", "SSN", "queuecomputer", "BSL", "bayesImageS", "MBSGS", "tsibble", "tsibbledata", "tsibblestats", "fable", "suggrants", "bfast", "hts", "robets", "stR","theif", "tsfeatures", "tsgeneration", "expsmooth", "fma", "fpp", "fpp2", "Mcomp", "ozdata", "tscompdata", "addb", "demography", "fds", "ftsa", "rainbow", "smoothAPC", "cricketdata", "eechidna", "emma", "hdrcde", "MEFM", "rmakdown", "season" ), from = "2014-06-01", to = "2018-10-01")
+r_package_down <- cranlogs::cran_downloads(package = c("forecast", "naniar", "datapasta", "SSN", "queuecomputer", "BSL", "bayesImageS", "MBSGS", "tsibble", "tsibbledata", "tsibblestats", "fable", "suggrants", "bfast", "hts", "robets", "stR","theif", "tsfeatures", "tsgeneration", "expsmooth", "fma", "fpp", "fpp2", "Mcomp", "ozdata", "tscompdata", "addb", "demography", "fds", "ftsa", "rainbow", "smoothAPC", "cricketdata", "eechidna", "emma", "hdrcde", "MEFM", "rmakdown", "season", "MSQC", "MPCI", "ActisoftR", "mvabund" ), from = "2014-06-01", to = "2018-10-01")
 
 #group by package and create cumulative count variable
 r_packages <- r_package_down %>% 
@@ -67,6 +66,4 @@ p2 <- ggplot(data=p2_data,
 p2 <- ggplotly(p2)
 p2
 ```
-
-
 

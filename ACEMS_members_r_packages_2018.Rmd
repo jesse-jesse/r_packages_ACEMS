@@ -2,7 +2,8 @@
 title: "R packages authored by ACEMS Members"
 author: "Rob J Hyndman"
 output:
-  html_document
+  html_document: default
+  MonashEBSTemplates::memo: default
 ---
 
 ```{r setup, include=FALSE}
@@ -13,6 +14,7 @@ knitr::opts_chunk$set(
   cache = TRUE,
   error = FALSE
 )
+options(digits=3, knitr.kable.NA="")
 library(tidyverse)
 library(stringi)
 library(glue)
@@ -132,7 +134,7 @@ r_packages <- r_package_down %>%
   arrange(-Total) %>%
   rename(Package=package) %>%
   inner_join(acemscran, by="Package") %>%
-  inner_join(acems, by=c("GivenInitials", "Family"))
+  left_join(acems, by=c("GivenInitials", "Family"))
 ```
 
 One way ACEMS member translate their methodological research into practice is via R packages. R is an open-source language for statistical computing and data analysis. Research can be shared by putting R packages on the Comprehensive R Archive Network (CRAN), or on github, or some other public code repository. R packages allow anyone to implement cutting-edge research on their own data.
@@ -153,7 +155,7 @@ r_packages %>%
 
 The following graph shows all packages authored by ACEMS members other than those downloaded more than 30,000 times during 2018.
 
-```{r graph}
+```{r graph, fig.height=8}
 # generate ggplot using plotly
 r_packages %>%
   filter(Total < 30000) %>%
